@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bakery Analytics Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/dist/chartjs-plugin-zoom.min.js"></script>
+
+<script src="papaparse.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.3/papaparse.min.js"></script>
+</head>
+
+<body>
+    <div class="app-shell">
+
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-icon">🥐</div>
+                <div>
+                    <span class="eyebrow">DATA VISUALIZATION</span>
+                    <h1>Bakery Analytics</h1>
+                </div>
+            </div>
+            <div class="data-status">
+                <span class="status-dot"></span>
+                <span id="statusText">กำลังโหลดข้อมูล...</span>
+            </div>
+        </header>
+
+        <main>
+
+            <!-- Introduction -->
+            <section class="hero">
+                <div class="hero-copy">
+                    <span class="section-kicker">ภาพรวมข้อมูล</span>
+                    <h2>วิเคราะห์ยอดขาย กำไร สต็อก และความเสี่ยงของร้านเบเกอรี่</h2>
+                    <p id="dataExplanation">
+                        Dashboard นี้ใช้ข้อมูลธุรกรรมที่ผ่านการทำความสะอาดแล้ว เพื่อสรุปภาพรวมการขาย
+                        และช่วยมองเห็นแนวโน้มของสินค้า สต็อก และความเสี่ยงจากสินค้าที่ขายไม่หมด
+                    </p>
+                </div>
+
+                <div class="hero-summary">
+                    <div>
+                        <span>ช่วงข้อมูล</span>
+                        <strong id="dateRange">-</strong>
+                    </div>
+                    <div>
+                        <span>จำนวนรายการ</span>
+                        <strong id="recordCount">-</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filters -->
+            <section class="filter-panel">
+                <div class="filter-heading">
+                    <div>
+                        <span class="section-kicker">FILTER</span>
+                        <h3>เลือกมุมมองข้อมูล</h3>
+                    </div>
+                    <button id="resetFilters" class="btn-secondary">รีเซ็ตตัวกรอง</button>
+                </div>
+
+                <div class="filters">
+                    <label>
+                        <span>เดือน</span>
+                        <select id="monthFilter">
+                            <option value="All">ทั้งหมด</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>หมวดหมู่สินค้า</span>
+                        <select id="categoryFilter">
+                            <option value="All">ทั้งหมด</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>ช่องทางชำระเงิน</span>
+                        <select id="paymentFilter">
+                            <option value="All">ทั้งหมด</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>ความเสี่ยงหมดอายุ</span>
+                        <select id="riskFilter">
+                            <option value="All">ทั้งหมด</option>
+                        </select>
+                    </label>
+                </div>
+
+                <p class="filter-note" id="filterSummary">กำลังแสดงข้อมูลทั้งหมด</p>
+            </section>
+
+            <!-- KPI -->
+            <section class="kpi-grid">
+                <article class="kpi-card">
+                    <div class="kpi-icon">฿</div>
+                    <div>
+                        <span>ยอดขายรวม</span>
+                        <strong id="kpiSales">-</strong>
+                    </div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-icon">↗</div>
+                    <div>
+                        <span>กำไรรวม</span>
+                        <strong id="kpiProfit">-</strong>
+                    </div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-icon">▦</div>
+                    <div>
+                        <span>จำนวนสินค้าที่ขาย</span>
+                        <strong id="kpiUnits">-</strong>
+                    </div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-icon">⚠</div>
+                    <div>
+                        <span>สินค้าที่เหลือ</span>
+                        <strong id="kpiUnsold">-</strong>
+                    </div>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-icon">♨</div>
+                    <div>
+                        <span>ต้นทุนของเสีย</span>
+                        <strong id="kpiWaste">-</strong>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Insight -->
+            <section class="insight-card">
+                <div class="insight-title">
+                    <span class="insight-icon">✦</span>
+                    <div>
+                        <span class="section-kicker">QUICK INSIGHT</span>
+                        <h3>สรุปข้อมูลจากมุมมองปัจจุบัน</h3>
+                    </div>
+                </div>
+                <div class="insight-grid">
+                    <div>
+                        <span>หมวดหมู่ยอดขายสูงสุด</span>
+                        <strong id="insightCategory">-</strong>
+                    </div>
+                    <div>
+                        <span>เดือนยอดขายสูงสุด</span>
+                        <strong id="insightMonth">-</strong>
+                    </div>
+                    <div>
+                        <span>ช่องทางชำระเงินที่ใช้มากที่สุด</span>
+                        <strong id="insightPayment">-</strong>
+                    </div>
+                    <div>
+                        <span>ความเสี่ยงหมดอายุที่พบมากที่สุด</span>
+                        <strong id="insightRisk">-</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts -->
+            <section class="section-header">
+                <div>
+                    <span class="section-kicker">ANALYTICS</span>
+                    <h2>กราฟวิเคราะห์ข้อมูล</h2>
+                </div>
+                <span class="zoom-hint">ลากเพื่อ Zoom • เลื่อนเมาส์เพื่อ Zoom • Double click เพื่อรีเซ็ต</span>
+            </section>
+
+            <section class="chart-grid">
+
+                <article class="chart-card chart-wide">
+                    <div class="chart-header">
+                        <div>
+                            <span class="chart-number">01</span>
+                            <h3>แนวโน้มยอดขายรายเดือน</h3>
+                            <p>เปรียบเทียบยอดขายรวมของแต่ละเดือน</p>
+                        </div>
+                        <button class="chart-reset" data-chart="monthlySalesChart">Reset Zoom</button>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="monthlySalesChart"></canvas>
+                    </div>
+                </article>
+
+                <article class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <span class="chart-number">02</span>
+                            <h3>ยอดขายตามหมวดหมู่</h3>
+                            <p>ดูหมวดหมู่ที่สร้างยอดขายสูงที่สุด</p>
+                        </div>
+                        <button class="chart-reset" data-chart="categorySalesChart">Reset</button>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="categorySalesChart"></canvas>
+                    </div>
+                </article>
+
+                <article class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <span class="chart-number">03</span>
+                            <h3>กำไรตามหมวดหมู่</h3>
+                            <p>เปรียบเทียบกำไรและผลขาดทุนของแต่ละหมวดหมู่</p>
+                        </div>
+                        <button class="chart-reset" data-chart="categoryProfitChart">Reset</button>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="categoryProfitChart"></canvas>
+                    </div>
+                </article>
+
+                <article class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <span class="chart-number">04</span>
+                            <h3>สัดส่วนช่องทางการชำระเงิน</h3>
+                            <p>ดูพฤติกรรมการเลือกช่องทางชำระเงิน</p>
+                        </div>
+                    </div>
+                    <div class="chart-wrap chart-doughnut">
+                        <canvas id="paymentChart"></canvas>
+                    </div>
+                </article>
+
+                <article class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <span class="chart-number">05</span>
+                            <h3>ผลิต ขาย และเหลือ</h3>
+                            <p>เปรียบเทียบจำนวนสินค้าตามหมวดหมู่</p>
+                        </div>
+                        <button class="chart-reset" data-chart="inventoryChart">Reset</button>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="inventoryChart"></canvas>
+                    </div>
+                </article>
+
+                <article class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <span class="chart-number">06</span>
+                            <h3>ระดับความเสี่ยงหมดอายุ</h3>
+                            <p>จำนวนรายการในแต่ละระดับความเสี่ยง</p>
+                        </div>
+                    </div>
+                    <div class="chart-wrap chart-doughnut">
+                        <canvas id="riskChart"></canvas>
+                    </div>
+                </article>
+
+            </section>
+
+            <footer>
+                <span>Bakery Analytics Dashboard</span>
+                <span>Interactive Data Visualization</span>
+            </footer>
+
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

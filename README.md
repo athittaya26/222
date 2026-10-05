@@ -28,3 +28,21 @@ Dataset ที่ใช้เป็นข้อมูลธุรกรรมร
 - Units_Produced
 - Units_Sold
 - Unsold_Units
+
+## Prompt AI
+1.ช่วยสร้าง Interactive Dashboard ด้วย HTML, CSS และ JavaScript
+เงื่อนไข:
+- ใช้ Chart.js
+- อ่านข้อมูลจาก CSV
+- มีกราฟอย่างน้อย 4 ประเภท
+- มี Filter สำหรับเลือกข้อมูล
+- รองรับ Responsive Design
+- มี KPI Cards และ Quick Insight
+2.ช่วยออกแบบ Dashboard ให้มีลักษณะเหมือน Business Analytics Dashboard
+ต้องการ:
+- KPI Cards
+- Modern UI
+- Glassmorphism Design
+- Hover Effects
+- Responsive Layout
+- Professional Color Scheme
